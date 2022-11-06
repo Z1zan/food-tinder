@@ -1,0 +1,24 @@
+.cards-container {
+  position: relative;
+  min-width: 100%;
+
+  .card {
+    position: absolute;
+    width: -webkit-fill-available;
+    z-index: 10;
+
+    img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      background-color: #fff;
+    }
+
+    .buttons-container {
+      display: flex;
+      justify-content: space-evenly;
+      margin-top: 10px;
+    }
+  }
+}
+

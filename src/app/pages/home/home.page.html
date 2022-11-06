@@ -2,6 +2,35 @@
   <app-header pageTitle="Home"></app-header>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-padding">
+
+  <div class="cards-container" *ngIf="foodData">
+    <ion-card *ngFor="let card of foodData" [id]="card.id" class="card" mode="ios">
+
+      <ng-container *ngIf="card.imageSet">
+
+<!--         if images gonna be more then 1 -->
+        <ion-slides [pager]="card.imageSet.length > 1">
+          <ion-slide *ngFor="let item of card.imageSet">
+            <img [src]="item.url" [alt]="item.title">
+          </ion-slide>
+        </ion-slides>
+      </ng-container>
+
+      <ion-card-header>
+        <ion-card-title>{{ card.name }}</ion-card-title>
+        <ion-buttons class="buttons-container">
+          <ion-button size="large" color="success" (click)="likeDislikeFood(card, true)">
+            <ion-icon slot="icon-only" name="heart-outline"></ion-icon>
+          </ion-button>
+          <ion-button size="large" color="danger" (click)="likeDislikeFood(card, false)">
+            <ion-icon slot="icon-only" name="heart-dislike-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-card-header>
+    </ion-card>
+  </div>
+
+
 
 </ion-content>
