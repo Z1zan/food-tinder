@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-header',
@@ -8,9 +9,16 @@ import { Component, Input, OnInit } from '@angular/core';
 export class HeaderComponent implements OnInit {
 
   @Input() pageTitle = '';
+  @Input() buttonBack = false;
 
-  constructor() { }
+  constructor(
+    private modalController: ModalController,
+  ) { }
 
   ngOnInit() {}
+
+  cancelModal() {
+    return this.modalController.dismiss();
+  }
 
 }

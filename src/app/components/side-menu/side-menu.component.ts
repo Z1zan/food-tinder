@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../../services/api.service';
+import { CommonService } from '../../services/common.service';
+import { ModalController } from '@ionic/angular';
+import { LikedListComponent } from '../liked-list/liked-list.component';
 
 @Component({
   selector: 'app-side-menu',
@@ -7,15 +11,22 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SideMenuComponent implements OnInit {
 
-  public appPages = [
-    { title: 'Home', url: '/', icon: 'heart' },
-    { title: 'Like someone', url: '/', icon: 'heart' },
-    { title: 'History', url: '/', icon: 'heart' },
-    { title: 'Settings', url: '/', icon: 'heart' },
-  ];
-
-  constructor() { }
+  constructor(
+    private commonService: CommonService,
+    private modalController: ModalController,
+  ) { }
 
   ngOnInit() {}
+
+  resetLikedProducts() {
+    this.commonService.resetLikedProducts();
+  }
+
+  async showLikedProducts() {
+    const modal = await this.modalController.create({
+      component: LikedListComponent,
+    });
+    await modal.present();
+  }
 
 }

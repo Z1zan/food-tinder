@@ -1,7 +1,8 @@
 import {
   AfterViewChecked,
+  ChangeDetectorRef,
   Component,
-  ElementRef,
+  ElementRef, OnDestroy,
   OnInit,
   QueryList,
   ViewChildren
@@ -9,17 +10,33 @@ import {
 import { AlertController, Gesture, GestureController, IonCard, LoadingController, Platform } from '@ionic/angular';
 import { ApiService } from '../../services/api.service';
 import { Product } from '../../interfaces/product';
+import { CommonService } from '../../services/common.service';
+import { mergeMap, takeUntil } from 'rxjs/operators';
+import { interval, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
-  styleUrls: ['./home.page.scss'],
+  styleUrls: [ './home.page.scss' ],
 })
-export class HomePage implements OnInit, AfterViewChecked {
+export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
 
-  @ViewChildren(IonCard, { read: ElementRef }) cards: QueryList<ElementRef>;
+  @ViewChildren(IonCard, {read: ElementRef}) cards: QueryList<ElementRef>;
   cardsArray: ElementRef<any>[] = [];
-  foodData: Product[];
+  foodData: Product[] = null;
+  oldProducts: Product[] = [];
+
+  likedProducts: Product[] = [];
+
+  slideOps = {
+    initialSlide: 1,
+    autoplay: {
+      delay: 1500,
+    },
+    allowTouchMove: false,
+  };
+
+  protected ngUnsubscribe = new Subject<void>();
 
   constructor(
     private gestureController: GestureController,
@@ -27,15 +44,51 @@ export class HomePage implements OnInit, AfterViewChecked {
     private apiService: ApiService,
     private loadingController: LoadingController,
     private alertController: AlertController,
-  ) { }
+    private cd: ChangeDetectorRef,
+    private commonService: CommonService,
+  ) {
+  }
 
   ngOnInit(): void {
+    this.commonService.getLikedProducts();
+    // get products from api
     this.loadProducts();
+
+    // get liked products in prev session
+    this.commonService.likedProducts.pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(prods => {
+        if (prods === null) {
+          this.loadProducts();
+          this.likedProducts = [];
+          return;
+        }
+        if (prods.length === 0) {
+          return;
+        }
+        this.likedProducts = prods;
+      });
+
+    // interval for get every 5 sec products data
+    interval(5000)
+      .pipe(
+        mergeMap(() => this.apiService.getAllFood()),
+        takeUntil(this.ngUnsubscribe)
+      )
+      .subscribe(data => {
+        if (JSON.stringify(data) !== JSON.stringify(this.oldProducts)) {
+          this.foodData = data;
+        }
+      });
   }
 
   ngAfterViewChecked() {
     this.cardsArray = this.cards?.toArray();
     this.useSwipe(this.cardsArray);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   async loadProducts() {
@@ -48,6 +101,14 @@ export class HomePage implements OnInit, AfterViewChecked {
       loading.dismiss();
       if (foodArr && foodArr.length > 0) {
         this.foodData = foodArr;
+        this.oldProducts = this.foodData;
+
+        if (this.likedProducts.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/prefer-for-of
+          for (let i = 0; i < this.likedProducts.length; i++) {
+            this.foodData = this.foodData.filter(item => item.id !== this.likedProducts[i].id);
+          }
+        }
       } else {
         this.showAlert();
       }
@@ -89,34 +150,29 @@ export class HomePage implements OnInit, AfterViewChecked {
     }
   }
 
-  likeFood(card: ElementRef | any): void {
-    const idElement = card && card?.nativeElement ? card.nativeElement.id : card.id;
-
-    this.cardsArray.some((item) => {
-      if (item.nativeElement.id != idElement) {
-        return false;
-      }
-      item.nativeElement.style.transition = '.8s ease-out';
-      item.nativeElement.style.transform = `translateX(-${+this.platform.width() * 2}px) rotate(90deg)`;
-      return true;
-    });
-  }
-
   likeDislikeFood(card, isLike: boolean): void {
-    const idElement = card && card?.nativeElement ? card.nativeElement.id : card.id;
-
-    console.log('like is ', isLike);
+    const idElement: string = card && card?.nativeElement ? card.nativeElement.id : card.id;
 
     this.cardsArray.some((item) => {
-      if (item.nativeElement.id != idElement) {
+      if (item.nativeElement.id !== idElement) {
         return false;
       }
 
       const operator = isLike ? '-' : '';
-
       item.nativeElement.style.transition = '.8s ease-out';
       item.nativeElement.style.transform =
         `translateX(${ operator + this.platform.width() * 2 }px) rotate(${ operator }60deg)`;
+
+      setTimeout(() => {
+        const lastCard = this.foodData.pop();   // or we can find item by id and delete then
+        if (isLike) {
+          this.likedProducts.push(lastCard);
+          this.commonService.saveLikedProducts(this.likedProducts);
+        }
+
+        this.cd.detectChanges();
+      }, 1000);
+
       return true;
     });
   }

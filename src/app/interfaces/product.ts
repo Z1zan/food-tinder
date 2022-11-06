@@ -3,7 +3,7 @@ export interface Product {
   name: string;
   manufacturer: string;
   shortDescription: string;
-  description: JSON;
+  description: string;
   price: number;
   imageSet: ImageInfo[];
   isDigital: boolean;
