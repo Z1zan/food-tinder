@@ -11,6 +11,5 @@ For build for Android & Ios devices you need:
 
 First start app
 
-```bash
-  npm install
-```
+1) `npm install`
+2) `ionic serve` or `ng serve`
