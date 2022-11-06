@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+
+    <ion-menu-toggle menu="start">
+      <ion-item lines="none">
+        <ion-avatar slot="end">
+          <img src="https://images.unsplash.com/photo-1623016717281-2642f5142f99?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&q=80" alt="avatar">
+        </ion-avatar>
+        <ion-label class="ion-text-wrap">Peter Parker</ion-label>
+      </ion-item>
+    </ion-menu-toggle>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list id="inbox-list">
+    <ion-list-header>Inbox</ion-list-header>
+    <ion-note>hi@ionicframework.com</ion-note>
+
+    <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">
+      <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
+        <ion-icon  slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+        <ion-label>{{ p.title }}</ion-label>
+      </ion-item>
+    </ion-menu-toggle>
+  </ion-list>
+</ion-content>
