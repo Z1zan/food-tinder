@@ -24,7 +24,7 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChildren(IonCard, {read: ElementRef}) cards: QueryList<ElementRef>;
   cardsArray: ElementRef<any>[] = [];
   foodData: Product[] = null;
-  oldProducts: Product[] = [];
+  oldProducts: Product[] = null;
 
   likedProducts: Product[] = [];
 
@@ -75,6 +75,9 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
         takeUntil(this.ngUnsubscribe)
       )
       .subscribe(data => {
+        console.log(1, data);
+        console.log(2, this.oldProducts);
+        console.log(3, JSON.stringify(data) !== JSON.stringify(this.oldProducts));
         if (JSON.stringify(data) !== JSON.stringify(this.oldProducts)) {
           this.foodData = data;
         }
@@ -100,8 +103,8 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
     this.apiService.getAllFood().subscribe((foodArr) => {
       loading.dismiss();
       if (foodArr && foodArr.length > 0) {
+        this.oldProducts = foodArr;
         this.foodData = foodArr;
-        this.oldProducts = this.foodData;
 
         if (this.likedProducts.length > 0) {
           // eslint-disable-next-line @typescript-eslint/prefer-for-of
