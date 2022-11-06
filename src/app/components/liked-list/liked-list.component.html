@@ -1,0 +1,22 @@
+<ion-header>
+  <app-header title="Liked List" [buttonBack]="true"></app-header>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-list-header>What products you like:</ion-list-header>
+
+    <ng-container *ngIf="likedArr; else nothing">
+      <ion-item *ngFor="let p of likedArr; let i = index">
+        <ion-label>{{ i + 1 + '. ' + p.name }}</ion-label>
+      </ion-item>
+    </ng-container>
+
+    <ng-template #nothing>
+      <ion-item>
+        <ion-label>No one</ion-label>
+        <ion-icon name="sad-outline" slot="end"></ion-icon>
+      </ion-item>
+    </ng-template>
+
+  </ion-list>
+</ion-content>

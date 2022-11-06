@@ -1,0 +1,14 @@
+<ion-toolbar>
+  <ion-buttons slot="start" *ngIf="!buttonBack; else showBackButton">
+    <ion-menu-button></ion-menu-button>
+  </ion-buttons>
+
+  <ng-template #showBackButton>
+    <ion-buttons slot="start">
+      <ion-button color="medium" (click)="cancelModal()">Go Back</ion-button>
+    </ion-buttons>
+  </ng-template>
+
+  <ion-title>{{ pageTitle }}</ion-title>
+</ion-toolbar>
+
