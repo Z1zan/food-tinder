@@ -1,0 +1,7 @@
+{
+  "name": "FoodTinder",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
