@@ -2,7 +2,7 @@
   <app-header pageTitle="Food Tinder"></app-header>
 </ion-header>
 
-<ion-content>
+<ion-content scroll-y="false">
   <ng-container *ngIf="foodData">
     <div class="cards-container" *ngIf="foodData.length > 0; else resetBtn">
       <ion-card *ngFor="let card of foodData" [id]="card.id" class="card">
