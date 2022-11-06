@@ -2,7 +2,8 @@ import {
   AfterViewChecked,
   ChangeDetectorRef,
   Component,
-  ElementRef, OnDestroy,
+  ElementRef,
+  OnDestroy,
   OnInit,
   QueryList,
   ViewChildren
@@ -11,7 +12,7 @@ import { AlertController, Gesture, GestureController, IonCard, LoadingController
 import { ApiService } from '../../services/api.service';
 import { Product } from '../../interfaces/product';
 import { CommonService } from '../../services/common.service';
-import { mergeMap, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 
 @Component({
@@ -70,17 +71,16 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
 
     // interval for get every 5 sec products data
     interval(5000)
-      .pipe(
-        mergeMap(() => this.apiService.getAllFood()),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe(data => {
-        console.log(1, data);
-        console.log(2, this.oldProducts);
-        console.log(3, JSON.stringify(data) !== JSON.stringify(this.oldProducts));
-        if (JSON.stringify(data) !== JSON.stringify(this.oldProducts)) {
-          this.foodData = data;
-        }
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(time => {
+        this.apiService.getAllFood().subscribe(data => {
+          if (time === 0) {
+            this.oldProducts = data;
+          }
+          if (JSON.stringify(data) !== JSON.stringify(this.oldProducts)) {
+            this.foodData = data;
+          }
+        });
       });
   }
 
@@ -103,7 +103,6 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
     this.apiService.getAllFood().subscribe((foodArr) => {
       loading.dismiss();
       if (foodArr && foodArr.length > 0) {
-        this.oldProducts = foodArr;
         this.foodData = foodArr;
 
         if (this.likedProducts.length > 0) {
