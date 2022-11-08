@@ -12,7 +12,7 @@ import { AlertController, Gesture, GestureController, IonCard, LoadingController
 import { ApiService } from '../../services/api.service';
 import { Product } from '../../interfaces/product';
 import { CommonService } from '../../services/common.service';
-import { takeUntil } from 'rxjs/operators';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 
 @Component({
@@ -23,11 +23,8 @@ import { interval, Subject } from 'rxjs';
 export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
 
   @ViewChildren(IonCard, {read: ElementRef}) cards: QueryList<ElementRef>;
-  cardsArray: ElementRef<any>[] = [];
-  foodData: Product[] = null;
-  oldProducts: Product[] = null;
 
-  likedProducts: Product[] = [];
+  foodData: Product[] = null;
 
   slideOps = {
     initialSlide: 1,
@@ -38,6 +35,11 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
   };
 
   protected ngUnsubscribe = new Subject<void>();
+
+  private cardsArray: ElementRef<any>[] = [];
+  private oldProductsData: Product[] = [];
+  private likedProducts: Product[] = [];
+  private allChosenProducts: Product[] = [];
 
   constructor(
     private gestureController: GestureController,
@@ -51,36 +53,35 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.commonService.getLikedProducts();
-    // get products from api
-    this.loadProducts();
+    this.commonService.getProducts();
 
     // get liked products in prev session
-    this.commonService.likedProducts.pipe(takeUntil(this.ngUnsubscribe))
+    this.commonService.allChosenProducts.pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(prods => {
         if (prods === null) {
           this.loadProducts();
-          this.likedProducts = [];
+          this.allChosenProducts = [];
           return;
         }
         if (prods.length === 0) {
           return;
         }
-        this.likedProducts = prods;
+        this.allChosenProducts = prods;
       });
+
+    // get products from api
+    this.loadProducts();
 
     // interval for get every 5 sec products data
     interval(5000)
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(time => {
-        this.apiService.getAllFood().subscribe(data => {
-          if (time === 0) {
-            this.oldProducts = data;
-          }
-          if (JSON.stringify(data) !== JSON.stringify(this.oldProducts)) {
-            this.foodData = data;
-          }
-        });
+      .pipe(
+        takeUntil(this.ngUnsubscribe),
+        switchMap(() => this.apiService.getAllFood()))
+      .subscribe((data) => {
+        if (JSON.stringify(data) !== JSON.stringify(this.oldProductsData)) {
+          this.foodData = this.filterProducts(data);
+          this.oldProductsData = data;
+        }
       });
   }
 
@@ -102,14 +103,13 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
 
     this.apiService.getAllFood().subscribe((foodArr) => {
       loading.dismiss();
+      this.oldProductsData = foodArr;
+
       if (foodArr && foodArr.length > 0) {
         this.foodData = foodArr;
 
-        if (this.likedProducts.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/prefer-for-of
-          for (let i = 0; i < this.likedProducts.length; i++) {
-            this.foodData = this.foodData.filter(item => item.id !== this.likedProducts[i].id);
-          }
+        if (this.allChosenProducts.length > 0) {
+          this.foodData = this.filterProducts(foodArr);
         }
       } else {
         this.showAlert();
@@ -159,23 +159,34 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
       if (item.nativeElement.id !== idElement) {
         return false;
       }
-
       const operator = isLike ? '-' : '';
       item.nativeElement.style.transition = '.8s ease-out';
       item.nativeElement.style.transform =
         `translateX(${ operator + this.platform.width() * 2 }px) rotate(${ operator }60deg)`;
 
-      setTimeout(() => {
-        const lastCard = this.foodData.pop();   // or we can find item by id and delete then
-        if (isLike) {
-          this.likedProducts.push(lastCard);
-          this.commonService.saveLikedProducts(this.likedProducts);
-        }
-
-        this.cd.detectChanges();
-      }, 1000);
+      // or we can find item by id and delete then
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      isLike ? this.saveLikedProducts(this.foodData[this.foodData.length - 1])
+        : this.saveAllProducts(this.foodData[this.foodData.length - 1]);
+      setTimeout(() => this.foodData.pop(), 800);
 
       return true;
     });
+  }
+
+  private filterProducts(products): Product[] {
+    return products.filter(item => !this.allChosenProducts.some((p) => p.id === item.id));
+  }
+
+  private saveLikedProducts(lastCard: Product) {
+    this.likedProducts.push(lastCard);
+    this.commonService.saveProducts(this.likedProducts, 'liked');
+
+    this.saveAllProducts(lastCard);
+  }
+
+  private saveAllProducts(lastCard: Product) {
+    this.allChosenProducts.push(lastCard);
+    this.commonService.saveProducts(this.allChosenProducts, 'allProducts');
   }
 }
