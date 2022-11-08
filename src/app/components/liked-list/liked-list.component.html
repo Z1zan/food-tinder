@@ -5,7 +5,7 @@
   <ion-list>
     <ion-list-header>What products you like:</ion-list-header>
 
-    <ng-container *ngIf="likedArr; else nothing">
+    <ng-container *ngIf="likedArr.length > 0; else nothing">
       <ion-item *ngFor="let p of likedArr; let i = index">
         <ion-label>{{ i + 1 + '. ' + p.name }}</ion-label>
       </ion-item>

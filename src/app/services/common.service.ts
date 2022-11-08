@@ -27,24 +27,9 @@ export class CommonService {
   }
 
   resetProducts(): void {
-    this.likedProducts.next(null);
+    this.likedProducts.next([]);
     this.allChosenProducts.next(null);
     localStorage.removeItem('liked');
     localStorage.removeItem('allProducts');
   }
-
-/*  saveLikedProducts(products: Product[]): void {
-    this.likedProducts.next(products);
-    localStorage.setItem('liked', JSON.stringify(products));
-  }
-
-  getLikedProducts(): void {
-    const likedProducts = JSON.parse(localStorage.getItem('liked'));
-    this.likedProducts.next(likedProducts);
-  }
-
-  resetLikedProducts(): void {
-    this.likedProducts.next(null);
-    localStorage.removeItem('liked');
-  }*/
 }
