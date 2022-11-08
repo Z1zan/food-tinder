@@ -12,7 +12,7 @@ import { AlertController, Gesture, GestureController, IonCard, LoadingController
 import { ApiService } from '../../services/api.service';
 import { Product } from '../../interfaces/product';
 import { CommonService } from '../../services/common.service';
-import { switchMap, takeUntil } from 'rxjs/operators';
+import { switchMap, take, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 
 @Component({
@@ -55,12 +55,16 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
   ngOnInit(): void {
     this.commonService.getProducts();
 
+    this.commonService.likedProducts.pipe(take(1))
+      .subscribe((items) => this.likedProducts = items);
+
     // get liked products in prev session
     this.commonService.allChosenProducts.pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(prods => {
         if (prods === null) {
-          this.loadProducts();
           this.allChosenProducts = [];
+          this.likedProducts = [];
+          this.loadProducts();
           return;
         }
         if (prods.length === 0) {
@@ -164,11 +168,13 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
       item.nativeElement.style.transform =
         `translateX(${ operator + this.platform.width() * 2 }px) rotate(${ operator }60deg)`;
 
-      // or we can find item by id and delete then
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      isLike ? this.saveLikedProducts(this.foodData[this.foodData.length - 1])
-        : this.saveAllProducts(this.foodData[this.foodData.length - 1]);
-      setTimeout(() => this.foodData.pop(), 800);
+      setTimeout(() => {
+        // or we can find item by id and delete then
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        isLike ? this.saveLikedProducts(this.foodData[this.foodData.length - 1])
+          : this.saveAllProducts(this.foodData[this.foodData.length - 1]);
+        this.foodData.pop();
+      }, 800);
 
       return true;
     });
