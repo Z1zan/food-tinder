@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../../services/api.service';
 import { CommonService } from '../../services/common.service';
 import { ModalController } from '@ionic/angular';
 import { LikedListComponent } from '../liked-list/liked-list.component';
