@@ -19,7 +19,7 @@ export class SideMenuComponent implements OnInit {
   ngOnInit() {}
 
   resetLikedProducts() {
-    this.commonService.resetLikedProducts();
+    this.commonService.resetProducts();
   }
 
   async showLikedProducts() {
