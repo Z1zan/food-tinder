@@ -17,7 +17,7 @@
                 <!--         if images gonna be more then 1 -->
                 <ion-slides [pager]="card.imageSet.length > 1" [options]="slideOps">
                   <ion-slide *ngFor="let item of card.imageSet">
-                    <img [src]="item.url" [alt]="item.title">
+                    <img [src]="item.url" [alt]="item.title" ondragstart="return false">
                   </ion-slide>
                 </ion-slides>
               </ng-container>
