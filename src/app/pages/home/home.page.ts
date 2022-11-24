@@ -141,7 +141,6 @@ export class HomePage implements OnInit, AfterViewChecked, OnDestroy {
           card.nativeElement.style.transform = `translateX(${ ev.deltaX }px) translateY(${ ev.deltaY }px) rotate(${ ev.deltaX / 10 }deg)`;
         },
         onEnd: ev => {
-          card.nativeElement.style.transition = '.8s ease-out';
           if (ev.deltaX > 150) { // Dislike
             this.likeDislikeFood(card, false);
           } else if (ev.deltaX < -150) { // Like
